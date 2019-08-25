@@ -57,7 +57,6 @@ class Connection(CoreConnection, Drawable):
 
         self._rel_points = None  # connection coordinates relative to sink/source
         self._arrow_rotation = 0.0  # rotation of the arrow in radians
-        self._current_cr = None  # for what_is_selected() of curved line
         self._line_path = None
 
     @nop_write
@@ -139,7 +138,6 @@ class Connection(CoreConnection, Drawable):
         """
         Draw the connection.
         """
-        self._current_cr = cr
         sink = self.sink_port
         source = self.source_port
 
@@ -202,16 +200,15 @@ class Connection(CoreConnection, Drawable):
 
         x, y = [a - b for a, b in zip(coor, self.coordinate)]
 
-        cr = self._current_cr
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 256, 256)
+        cr = cairo.Context(surface)
 
-        if cr is None:
-            return
-        cr.save()
         cr.new_path()
         cr.append_path(self._line_path)
         cr.set_line_width(cr.get_line_width() * LINE_SELECT_SENSITIVITY)
         hit = cr.in_stroke(x, y)
-        cr.restore()
+        cr = None
+        surface = None
 
         if hit:
             return self
